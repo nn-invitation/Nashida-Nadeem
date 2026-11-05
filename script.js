@@ -1,0 +1,123 @@
+
+const loader = document.getElementById('loader');
+const rsvpForm = document.getElementById('rsvpForm');
+const formMessage = document.getElementById('formMessage');
+
+const weddingDate = new Date('December 12, 2026 11:00:00');
+const daysEl = document.getElementById('days');
+const hoursEl = document.getElementById('hours');
+const minutesEl = document.getElementById('minutes');
+const secondsEl = document.getElementById('seconds');
+const countdownMessage = document.getElementById('countdownMessage');
+
+const enterBtn = document.getElementById('enterBtn');
+const invitationContent = document.getElementById('invitationContent');
+
+function openInvitation() {
+  invitationContent.style.display = 'block';
+  loader.classList.add('hide');
+
+  window.scrollTo(0, 0);
+}
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = weddingDate - now;
+
+  if (diff <= 0) {
+    daysEl.textContent = '❤️';
+    hoursEl.textContent = '00';
+    minutesEl.textContent = '00';
+    secondsEl.textContent = '00';
+    countdownMessage.textContent = 'Alhamdulillah! Today is our Nikkah Day. Please keep us in your duas. 🤍';
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  daysEl.textContent = String(days).padStart(2, '0');
+  hoursEl.textContent = String(hours).padStart(2, '0');
+  minutesEl.textContent = String(minutes).padStart(2, '0');
+  secondsEl.textContent = String(seconds).padStart(2, '0');
+}
+
+function handleRsvpSubmit(event) {
+  event.preventDefault();
+
+  const name = document.getElementById('rsvpName').value.trim();
+  const status = document.getElementById('rsvpStatus').value;
+  const guests = document.getElementById('guestCount').value;
+  const message = document.getElementById('rsvpMessage').value.trim();
+
+  if (!name || !status) {
+    formMessage.textContent = 'Please complete all required fields.';
+    formMessage.style.color = '#b14747';
+    return;
+  }
+
+  const whatsappMessage = `Nikkah RSVP
+
+Name: ${name}
+
+Attendance: ${status}
+
+Guests: ${guests}
+
+Message:
+${message}
+
+Looking forward to celebrating with you!`;
+
+  const phone = '919846206285';
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMessage)}`;
+
+  formMessage.textContent = 'Opening WhatsApp...';
+  formMessage.style.color = '#3b5b3b';
+  window.location.href = url;
+  rsvpForm.reset();
+}
+
+window.addEventListener('load', () => {
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+});
+
+enterBtn?.addEventListener('click', openInvitation);
+rsvpForm?.addEventListener('submit', handleRsvpSubmit);
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('show');
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.section').forEach((section) => observer.observe(section));
+const shareBtn = document.getElementById('shareBtn');
+
+shareBtn?.addEventListener('click', async () => {
+  const shareData = {
+    title: 'Nashida & Nadeem | Nikkah Invitation',
+    text: "You're warmly invited to Nashida & Nadeem's Nikkah 🤍💍",
+    url: window.location.href
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+    } catch (error) {
+      // User cancelled the share menu
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      alert('Invitation link copied! 🤍');
+    } catch (error) {
+      alert('Please copy the invitation link and share it. 🤍');
+    }
+  }
+});
